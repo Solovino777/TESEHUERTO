@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <title>¡Cuidando tu Huerto!</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .contenedor {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+      padding: 30px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      margin: 0 auto;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+
+    @media (min-width: 600px) {
+      .contenedor {
+        width: 70%;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .contenedor {
+        width: 50%;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .contenedor {
+        width: 40%;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .contenedor {
+        width: 30%;
+      }
+    }
+
+    .contenedor:hover {
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    h1 {
+      font-family: 'Dancing Script', cursive;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 36px;
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    #temperatura,
+    #humedad {
+      font-size: 36px;
+      font-weight: bold;
+      color: #28a745;
+    }
+
+    .icono-huerto {
+      width: 100px;
+      margin-bottom: 20px;
+      border-radius: 50%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .base-datos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin-top: 30px;
+    }
+
+    .planta {
+      width: 45%;
+      margin: 10px;
+      overflow: hidden;
+      position: relative;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .planta:hover {
+      transform: scale(1.2);
+    }
+
+    .planta img {
+      width: 100%;
+      height: auto;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .planta:hover img {
+      transform: scale(1.2);
+    }
+
+    .planta-info {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.9);
+      transform: scale(0);
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .planta:hover .planta-info {
+      transform: scale(1);
+    }
+
+    .planta-info h3 {
+      margin-bottom: 3px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .planta-info p {
+      font-size: 12px;
+      color: #555;
+      margin: 2px 0;
+    }
+
+    .agregar-planta-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    .agregar-planta-btn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="contenedor">
+    <img src="109.jpg" alt="Icono de huerto" class="icono-huerto">
+    <h1>Monitoreando tu Huerto</h1>
+
+    <p>La temperatura actual es: <span id="temperatura"></span></p>
+    <canvas id="graficaTemperatura" width="200" height="200"></canvas>
+
+    <p>La humedad actual es: <span id="humedad"></span></p>
+    <canvas id="graficaHumedad" width="200" height="200"></canvas>
+
+    <h2>Mis Plantas</h2>
+    <div class="base-datos" id="baseDatos">
+      <!-- Aquí se añadirán dinámicamente las plantas -->
+    </div>
+
+    <button class="agregar-planta-btn" onclick="agregarPlanta()">Agregar Planta</button>
+  </div>
+
+  <script>
+    const temperaturaData = {
+      labels: ['Temperatura'],
+      datasets: [{
+        data: [0, 100],
+        backgroundColor: ['#28a745', '#eee'],
+        borderWidth: 0
+      }]
+    };
+
+    const humedadData = {
+      labels: ['Humedad'],
+      datasets: [{
+        data: [0, 100],
+        backgroundColor: ['#28a745', '#eee'],
+        borderWidth: 0
+      }]
+    };
+
+    const opcionesGraficas = {
+      cutout: '80%', // Ajusta el tamaño del círculo central
+      legend: {
+        display: false
+      }
+    };
+
+    const graficaTemperatura = new Chart(document.getElementById('graficaTemperatura').getContext('2d'), {
+      type: 'pie',
+      data: temperaturaData,
+      options: opcionesGraficas
+    });
+
+    const graficaHumedad = new Chart(document.getElementById('graficaHumedad').getContext('2d'), {
+      type: 'pie',
+      data: humedadData,
+      options: opcionesGraficas
+    });
+
+    const socket = new WebSocket("ws://localhost:8080");
+
+    socket.onmessage = function (event) {
+      const [temperaturaStr, humedadStr] = event.data.split("\n");
+
+      document.getElementById("temperatura").textContent = temperaturaStr;
+      document.getElementById("humedad").textContent = humedadStr;
+
+      actualizarGraficas(parseInt(temperaturaStr), parseInt(humedadStr));
+    };
+
+    socket.onclose = function (event) {
+      console.error("WebSocket cerrado:", event);
+    };
+
+    socket.onerror = function (event) {
+      console.error("Error en WebSocket:", event);
+    };
+
+    const plantas = [
+      {
+        nombre: 'Chiles',
+        imagen: 'chiles.jpg',
+        info: {
+          nombre: 'Chiles',
+          temperaturaMinima: '15°C',
+          temperaturaMaxima: '30°C',
+          tiempoMaduracion: '60 días',
+          nutricion: 'Rica en vitaminas y antioxidantes',
+          luzTiempo: '6-8 horas diarias'
+        }
+      },
+      {
+        nombre: 'Rábanos',
+        imagen: 'rabanos.jpg',
+        info: {
+          nombre: 'Rábanos',
+          temperaturaMinima: '10°C',
+          temperaturaMaxima: '25°C',
+          tiempoMaduracion: '30 días',
+          nutricion: 'Buena fuente de fibra y minerales',
+          luzTiempo: '4-6 horas diarias'
+        }
+      },
+      {
+        nombre: 'Zanahorias',
+        imagen: 'zanahorias.jpg',
+        info: {
+          nombre: 'Zanahorias',
+          temperaturaMinima: '10°C',
+          temperaturaMaxima: '25°C',
+          tiempoMaduracion: '70 días',
+          nutricion: 'Rica en betacarotenos y antioxidantes',
+          luzTiempo: '6-8 horas diarias'
+        }
+      }
+    ];
+
+    function agregarPlanta() {
+      const nuevaPlanta = {
+        nombre: prompt('Ingrese el nombre de la planta:'),
+        imagen: prompt('Ingrese la URL de la imagen de la planta:'),
+        info: {
+          nombre: prompt('Nombre:'),
+          temperaturaMinima: prompt('Temperatura Mínima:'),
+          temperaturaMaxima: prompt('Temperatura Máxima:'),
+          tiempoMaduracion: prompt('Tiempo de Maduración:'),
+          nutricion: prompt('Nutrición:'),
+          luzTiempo: prompt('Luz Tiempo:')
+        }
+      };
+
+      plantas.push(nuevaPlanta);
+      actualizarBaseDatos();
+    }
+
+    function actualizarBaseDatos() {
+      const baseDatosElement = document.getElementById('baseDatos');
+      baseDatosElement.innerHTML = '';
+
+      plantas.forEach(planta => {
+        const plantaElement = document.createElement('div');
+        plantaElement.classList.add('planta');
+
+        const imagenElement = document.createElement('img');
+        imagenElement.src = planta.imagen;
+        plantaElement.appendChild(imagenElement);
+
+        const infoElement = document.createElement('div');
+        infoElement.classList.add('planta-info');
+
+        const nombreElement = document.createElement('h3');
+        nombreElement.textContent = planta.nombre;
+        infoElement.appendChild(nombreElement);
+
+        const detallesElement = document.createElement('div');
+        detallesElement.classList.add('planta-detalles');
+
+        const detallesText = `
+          <p><strong>Nombre:</strong> ${planta.info.nombre}</p>
+          <p><strong>Temperatura Mínima:</strong> ${planta.info.temperaturaMinima}</p>
+          <p><strong>Temperatura Máxima:</strong> ${planta.info.temperaturaMaxima}</p>
+          <p><strong>Tiempo de Maduración:</strong> ${planta.info.tiempoMaduracion}</p>
+          <p><strong>Nutrición:</strong> ${planta.info.nutricion}</p>
+          <p><strong>Luz Tiempo:</strong> ${planta.info.luzTiempo}</p>
+        `;
+
+        detallesElement.innerHTML = detallesText;
+
+        infoElement.appendChild(detallesElement);
+
+        plantaElement.appendChild(infoElement);
+        baseDatosElement.appendChild(plantaElement);
+      });
+    }
+
+    actualizarBaseDatos();
+
+    function actualizarGraficas(temperatura, humedad) {
+      temperaturaData.datasets[0].data = [temperatura, 100 - temperatura];
+      humedadData.datasets[0].data = [humedad, 100 - humedad];
+
+      graficaTemperatura.update();
+      graficaHumedad.update();
+    }
+  </script>
+</body>
+
+</html>
