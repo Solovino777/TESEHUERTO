@@ -31,30 +31,6 @@
       transition: box-shadow 0.3s ease-in-out;
     }
 
-    @media (min-width: 600px) {
-      .contenedor {
-        width: 70%;
-      }
-    }
-
-    @media (min-width: 768px) {
-      .contenedor {
-        width: 50%;
-      }
-    }
-
-    @media (min-width: 992px) {
-      .contenedor {
-        width: 40%;
-      }
-    }
-
-    @media (min-width: 1200px) {
-      .contenedor {
-        width: 30%;
-      }
-    }
-
     .contenedor:hover {
       box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
     }
@@ -164,6 +140,15 @@
     .agregar-planta-btn:hover {
       background-color: #218838;
     }
+
+    .opciones-plantas {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .opciones-plantas button {
+      margin: 5px;
+    }
   </style>
 </head>
 
@@ -183,147 +168,193 @@
       <!-- Aquí se añadirán dinámicamente las plantas -->
     </div>
 
-    <button class="agregar-planta-btn" onclick="agregarPlanta()">Agregar Planta</button>
-  </div>
+    <button class="agregar-planta-btn" onclick="mostrarOpciones()">Agregar Planta</button>
 
-  <script>
-    const temperaturaData = {
-      labels: ['Temperatura'],
-      datasets: [{
-        data: [0, 100],
-        backgroundColor: ['#28a745', '#eee'],
-        borderWidth: 0
-      }]
-    };
+    <!-- Opciones de plantas ocultas al inicio -->
+    <div class="opciones-plantas" id="opcionesPlantas" style="display: none;">
+      <button onclick="agregarPlanta('Lechuga')">Lechuga</button>
+      <button onclick="agregarPlanta('Jitomate')">Jitomate</button>
+      <button onclick="agregarPlanta('Cebolla')">Cebolla</button>
+    </div>
 
-    const humedadData = {
-      labels: ['Humedad'],
-      datasets: [{
-        data: [0, 100],
-        backgroundColor: ['#28a745', '#eee'],
-        borderWidth: 0
-      }]
-    };
+    <script>
+      // JavaScript aquí...
 
-    const opcionesGraficas = {
-      cutout: '80%', // Ajusta el tamaño del círculo central
-      legend: {
-        display: false
-      }
-    };
+      const temperaturaData = {
+        labels: ['Temperatura'],
+        datasets: [{
+          data: [0, 100],
+          backgroundColor: ['#28a745', '#eee'],
+          borderWidth: 0
+        }]
+      };
 
-    const graficaTemperatura = new Chart(document.getElementById('graficaTemperatura').getContext('2d'), {
-      type: 'pie',
-      data: temperaturaData,
-      options: opcionesGraficas
-    });
+      const humedadData = {
+        labels: ['Humedad'],
+        datasets: [{
+          data: [0, 100],
+          backgroundColor: ['#28a745', '#eee'],
+          borderWidth: 0
+        }]
+      };
 
-    const graficaHumedad = new Chart(document.getElementById('graficaHumedad').getContext('2d'), {
-      type: 'pie',
-      data: humedadData,
-      options: opcionesGraficas
-    });
-
-    const socket = new WebSocket("ws://localhost:8080");
-
-    socket.onmessage = function (event) {
-      const [temperaturaStr, humedadStr] = event.data.split("\n");
-
-      document.getElementById("temperatura").textContent = temperaturaStr;
-      document.getElementById("humedad").textContent = humedadStr;
-
-      actualizarGraficas(parseInt(temperaturaStr), parseInt(humedadStr));
-    };
-
-    socket.onclose = function (event) {
-      console.error("WebSocket cerrado:", event);
-    };
-
-    socket.onerror = function (event) {
-      console.error("Error en WebSocket:", event);
-    };
-
-    const plantas = [
-      {
-        nombre: 'Chiles',
-        imagen: 'chiles.jpg',
-        info: {
-          nombre: 'Chiles',
-          temperaturaMinima: '15°C',
-          temperaturaMaxima: '30°C',
-          tiempoMaduracion: '60 días',
-          nutricion: 'Rica en vitaminas y antioxidantes',
-          luzTiempo: '6-8 horas diarias'
-        }
-      },
-      {
-        nombre: 'Rábanos',
-        imagen: 'rabanos.jpg',
-        info: {
-          nombre: 'Rábanos',
-          temperaturaMinima: '10°C',
-          temperaturaMaxima: '25°C',
-          tiempoMaduracion: '30 días',
-          nutricion: 'Buena fuente de fibra y minerales',
-          luzTiempo: '4-6 horas diarias'
-        }
-      },
-      {
-        nombre: 'Zanahorias',
-        imagen: 'zanahorias.jpg',
-        info: {
-          nombre: 'Zanahorias',
-          temperaturaMinima: '10°C',
-          temperaturaMaxima: '25°C',
-          tiempoMaduracion: '70 días',
-          nutricion: 'Rica en betacarotenos y antioxidantes',
-          luzTiempo: '6-8 horas diarias'
-        }
-      }
-    ];
-
-    function agregarPlanta() {
-      const nuevaPlanta = {
-        nombre: prompt('Ingrese el nombre de la planta:'),
-        imagen: prompt('Ingrese la URL de la imagen de la planta:'),
-        info: {
-          nombre: prompt('Nombre:'),
-          temperaturaMinima: prompt('Temperatura Mínima:'),
-          temperaturaMaxima: prompt('Temperatura Máxima:'),
-          tiempoMaduracion: prompt('Tiempo de Maduración:'),
-          nutricion: prompt('Nutrición:'),
-          luzTiempo: prompt('Luz Tiempo:')
+      const opcionesGraficas = {
+        cutout: '80%', // Ajusta el tamaño del círculo central
+        legend: {
+          display: false
         }
       };
 
-      plantas.push(nuevaPlanta);
-      actualizarBaseDatos();
-    }
+      const graficaTemperatura = new Chart(document.getElementById('graficaTemperatura').getContext('2d'), {
+        type: 'pie',
+        data: temperaturaData,
+        options: opcionesGraficas
+      });
 
-    function actualizarBaseDatos() {
-      const baseDatosElement = document.getElementById('baseDatos');
-      baseDatosElement.innerHTML = '';
+      const graficaHumedad = new Chart(document.getElementById('graficaHumedad').getContext('2d'), {
+        type: 'pie',
+        data: humedadData,
+        options: opcionesGraficas
+      });
 
-      plantas.forEach(planta => {
-        const plantaElement = document.createElement('div');
-        plantaElement.classList.add('planta');
+      const socket = new WebSocket("ws://localhost:8080/");
 
-        const imagenElement = document.createElement('img');
-        imagenElement.src = planta.imagen;
-        plantaElement.appendChild(imagenElement);
+      socket.onmessage = function (event) {
+        const [temperaturaStr, humedadStr] = event.data.split("\n");
 
-        const infoElement = document.createElement('div');
-        infoElement.classList.add('planta-info');
+        document.getElementById("temperatura").textContent = temperaturaStr;
+        document.getElementById("humedad").textContent = humedadStr;
 
-        const nombreElement = document.createElement('h3');
-        nombreElement.textContent = planta.nombre;
-        infoElement.appendChild(nombreElement);
+        actualizarGraficas(parseInt(temperaturaStr), parseInt(humedadStr));
+      };
 
-        const detallesElement = document.createElement('div');
-        detallesElement.classList.add('planta-detalles');
+      socket.onclose = function (event) {
+        console.error("WebSocket cerrado:", event);
+      };
 
-        const detallesText = `
-          <p><strong>Nombre:</strong> ${planta.info.nombre}</p>
+      socket.onerror = function (event) {
+        console.error("Error en WebSocket:", event);
+      };
+
+      const plantas = [
+        {
+          nombre: 'Chiles',
+          imagen: 'chiles.jpg',
+          info: {
+            nombre: 'Chiles',
+            temperaturaMinima: '15°C',
+            temperaturaMaxima: '30°C',
+            tiempoMaduracion: '60 días',
+            nutricion: 'Rica en vitaminas y antioxidantes',
+            luzTiempo: '6-8 horas diarias'
+          }
+        },
+        {
+          nombre: 'Rábanos',
+          imagen: 'rabanos.jpg',
+          info: {
+            nombre: 'Rábanos',
+            temperaturaMinima: '10°C',
+            temperaturaMaxima: '25°C',
+            tiempoMaduracion: '30 días',
+            nutricion: 'Buena fuente de fibra y minerales',
+            luzTiempo: '4-6 horas diarias'
+          }
+        },
+        {
+          nombre: 'Zanahorias',
+          imagen: 'zanahorias.jpg',
+          info: {
+            nombre: 'Zanahorias',
+            temperaturaMinima: '10°C',
+            temperaturaMaxima: '25°C',
+            tiempoMaduracion: '70 días',
+            nutricion: 'Rica en betacarotenos y antioxidantes',
+            luzTiempo: '6-8 horas diarias'
+          }
+        }
+      ];
+
+      const plantasAdicionales = {
+        'Lechuga': {
+          nombre: 'Lechuga',
+          imagen: 'lechuga.jpg', // Ajusta la ruta de la imagen
+          info: {
+            nombre: 'Lechuga',
+            temperaturaMinima: '10°C',
+            temperaturaMaxima: '25°C',
+            tiempoMaduracion: '40 días',
+            nutricion: 'Rica en fibra',
+            luzTiempo: '4-6 horas diarias'
+          }
+        },
+        'Jitomate': {
+          nombre: 'Jitomate',
+          imagen: 'jitomate.jpg', // Ajusta la ruta de la imagen
+          info: {
+            nombre: 'Jitomate',
+            temperaturaMinima: '20°C',
+            temperaturaMaxima: '30°C',
+            tiempoMaduracion: '80 días',
+            nutricion: 'vitamina C',
+            luzTiempo: '6-8 horas diarias'
+          }
+        },
+        'Cebolla': {
+          nombre: 'Cebolla',
+          imagen: 'cebolla.jpg', // Ajusta la ruta de la imagen
+          info: {
+            nombre: 'Cebolla',
+            temperaturaMinima: '10°C',
+            temperaturaMaxima: '25°C',
+            tiempoMaduracion: '90 días',
+            nutricion: 'compuestos sulfurados',
+            luzTiempo: '4-6 horas diarias'
+          }
+        }
+      };
+
+      function agregarPlanta(nombre) {
+        const nuevaPlanta = plantasAdicionales[nombre];
+
+        if (nuevaPlanta) {
+          plantas.push(nuevaPlanta);
+          actualizarBaseDatos();
+          // Ocultar las opciones después de agregar la planta
+          const opcionesPlantas = document.getElementById('opcionesPlantas');
+          opcionesPlantas.style.display = 'none';
+        }
+      }
+
+      function mostrarOpciones() {
+        const opcionesPlantas = document.getElementById('opcionesPlantas');
+        opcionesPlantas.style.display = 'flex'; // Cambiar display a 'flex'
+      }
+
+      function actualizarBaseDatos() {
+        const baseDatosElement = document.getElementById('baseDatos');
+        baseDatosElement.innerHTML = '';
+
+        plantas.forEach(planta => {
+          const plantaElement = document.createElement('div');
+          plantaElement.classList.add('planta');
+
+          const imagenElement = document.createElement('img');
+          imagenElement.src = planta.imagen;
+          plantaElement.appendChild(imagenElement);
+
+          const infoElement = document.createElement('div');
+          infoElement.classList.add('planta-info');
+
+          const nombreElement = document.createElement('h3');
+          nombreElement.textContent = planta.nombre;
+          infoElement.appendChild(nombreElement);
+
+          const detallesElement = document.createElement('div');
+          detallesElement.classList.add('planta-detalles');
+
+          const detallesText = `
+            <p><strong>Nombre:</strong> ${planta.info.nombre}</p>
           <p><strong>Temperatura Mínima:</strong> ${planta.info.temperaturaMinima}</p>
           <p><strong>Temperatura Máxima:</strong> ${planta.info.temperaturaMaxima}</p>
           <p><strong>Tiempo de Maduración:</strong> ${planta.info.tiempoMaduracion}</p>
@@ -353,3 +384,4 @@
 </body>
 
 </html>
+
